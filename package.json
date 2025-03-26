@@ -16,6 +16,8 @@
     "@reown/appkit": "^1.6.6",
     "@reown/appkit-adapter-wagmi": "^1.6.6",
     "@tanstack/react-query": "^5.66.0",
+    "@tonconnect/ui": "^2.1.0",
+    "@tonconnect/ui-react": "^2.1.0",
     "axios": "^1.7.9",
     "jquery": "^3.7.1",
     "next": "15.1.6",
