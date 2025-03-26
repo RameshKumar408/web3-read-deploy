@@ -17,7 +17,7 @@ export default function Home() {
     useEffect(() => {
         // Initialize TON Connect UI
         tonConnectUI = new TonConnectUI({
-            manifestUrl: 'https://web3deploy.netlify.app/api/manifest'
+            manifestUrl: 'https://web3deploy.netlify.app/tonconnect-manifest.json'
         });
 
     }, []);

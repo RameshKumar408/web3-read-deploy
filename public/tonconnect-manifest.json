@@ -1,20 +1,7 @@
 {
-    "name": "My TON App",
-    "url": "https://your-app-url.com",
-    "icon": "https://your-app-url.com/icon.png",
-    "description": "A sample app that integrates TON Connect.",
-    "version": "1.0.0",
-    "network": "mainnet",
-    "features": {
-        "connect": true,
-        "sendTransaction": true
-    },
-    "shortName": "MyApp",
-    "methods": [
-        "getAccount",
-        "sendTransaction"
-    ],
-    "requiredPermissions": [
-        "account"
-    ]
+    "name": "Web App",
+    "url": "https://web3deploy.netlify.app",
+    "iconUrl": "https://web3deploy.netlify.app/next.svg",
+    "termsOfUseUrl": "",
+    "privacyPolicyUrl": ""
 }
