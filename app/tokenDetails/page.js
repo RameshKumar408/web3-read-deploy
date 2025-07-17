@@ -6,41 +6,35 @@ import Web3 from 'web3';
 import axios from 'axios';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-
 import toast from 'react-hot-toast';
 import AbiArray from './Abi.json'
 import { useRouter } from "next/navigation";
 import $ from 'jquery';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function TokenDetails() {
-
     const { walletProvider } = useAppKitProvider('eip155')
     const web3 = new Web3(walletProvider)
-
     const { address, isConnected } = useAppKitAccount()
-
     const { chainId, switchNetwork } = useAppKitNetwork()
-
     const router = useRouter();
 
-    const [Balance, setBalance] = useState(0)
-
-    // contract Address
-    const [contractAddress, setContractAddress] = useState('')
-
+    // Controlled input values
+    const [Balance, setBalance] = useState("0")
+    const [contractAddress, setContractAddress] = useState("")
+    const [selectedNetwork, setSelectedNetwork] = useState("")
     const [viewContract, setViewContract] = useState([])
     const [writeContract, setWriteContract] = useState([])
+    const [ContractInstances, setContractInstances] = useState("")
+    // For dynamic ABI input values
+    const [abiInputs, setAbiInputs] = useState({})
 
-    const [ContractInstances, setContractInstances] = useState()
-
-    // network List
-    const [networkList, setNetworkList] = useState([
-        { label: 'Select Network' },
+    const [networkList] = useState([
+        { label: 'Select Network', value: "" },
         { label: 'Ethereum', value: mainnet },
         { label: 'Sepolia', value: sepolia },
         { label: 'BSC Testnet', value: bscTestnet },
@@ -49,14 +43,9 @@ function TokenDetails() {
         { label: 'Polygon Amoy', value: polygonAmoy },
     ])
 
-    // selected Network List
-    const [selectedNetwork, setSelectedNetwork] = useState('')
-    // check address is contract address or not
     async function isContractAddress(address) {
         try {
-            // Get the code at the specified address
             const code = await web3.eth.getCode(address);
-            // If the code is '0x', it's an externally owned account (EOA), not a contract
             return code !== '0x';
         } catch (error) {
             console.error('Error checking address:', error);
@@ -65,40 +54,68 @@ function TokenDetails() {
     }
 
     useEffect(() => {
-        if (selectedNetwork) {
+        if (selectedNetwork !== "") {
+            setLoader(true)
             switchNetwork(JSON.parse(selectedNetwork));
         }
     }, [selectedNetwork])
 
+    const [loader, setLoader] = useState(false)
+
     const checkBalance = async () => {
-        const bal = await web3.eth.getBalance(address)
-        setBalance(web3.utils.fromWei(bal, "ether"))
+        if (!address) {
+            setBalance("0");
+            return;
+        }
+        try {
+            const bal = await web3.eth.getBalance(address)
+            setBalance(web3.utils.fromWei(bal, "ether") ?? "0")
+        } catch (error) {
+            console.error("Error fetching balance:", error);
+            setBalance("0");
+        }
+        setLoader(false)
     }
 
     useEffect(() => {
-        if (chainId) {
+        if (chainId && address) {
+            if (chainId == 1) {
+                setSelectedNetwork(JSON.stringify(mainnet))
+            } else if (chainId == 97) {
+                setSelectedNetwork(JSON.stringify(bscTestnet))
+            } else if (chainId == 56) {
+                setSelectedNetwork(JSON.stringify(bsc))
+            } else if (chainId == 11155111) {
+                setSelectedNetwork(JSON.stringify(sepolia))
+            } else if (chainId == 137) {
+                setSelectedNetwork(JSON.stringify(polygon))
+            } else if (chainId == 80002) {
+                setSelectedNetwork(JSON.stringify(polygonAmoy))
+            }
             checkBalance()
         }
-    }, [chainId])
+    }, [chainId, address])
+
 
     useEffect(() => {
-        if (isConnected == false) {
+        if (isConnected === false) {
             router.push('/')
         }
     }, [isConnected])
 
+    const [contractAddErr, setContractAddErr] = useState("")
+
     // get Contract Abi
     const getContractAbi = async () => {
         try {
+            if (!contractAddress) return setContractAddErr("Please enter contract address")
+
             var add = web3.utils.isAddress(contractAddress);
             var checkAdd = await isContractAddress(contractAddress)
-            console.log("🚀 ~ getContractAbi ~ checkAdd:", checkAdd)
-            if (!contractAddress) return toast.error("Please enter contract address")
-            if (!add) return toast.error("Please enter valid contract address")
-            if (!checkAdd) return toast.error("Please enter valid contract address")
+            if (!add) return setContractAddErr("Please enter valid contract address")
+            if (!checkAdd) return setContractAddErr("Please enter valid contract address")
 
-            let url
-            var apikey
+            let url, apikey;
             if (chainId == 97) {
                 url = process.env.NEXT_PUBLIC_BSC_TEST_URL
                 apikey = process.env.NEXT_PUBLIC_BSC_API
@@ -118,26 +135,22 @@ function TokenDetails() {
                 url = process.env.NEXT_PUBLIC_POLY_TEST_URL
                 apikey = process.env.NEXT_PUBLIC_POLY_API
             }
-            console.log(url, "url", `${url}/api?module=contract&action=getabi&address=${contractAddress}&apikey=${apikey}`)
 
             const { data } = await axios.get(`${url}/api?module=contract&action=getabi&address=${contractAddress}&apikey=${apikey}`)
             var Abi
-            console.log("🚀 ~ getContractAbi ~ data:", data)
             if (data?.status == "1") {
                 Abi = JSON.parse(data?.result)
             } else {
                 Abi = AbiArray
             }
-            console.log(Abi, "Abi")
             const ContractInstance = new web3.eth.Contract(Abi, contractAddress)
             setContractInstances(ContractInstance.methods)
-            var arr = []
-            var arr1 = []
+            var arr = [], arr1 = [];
             for (let i = 0; i < Abi.length; i++) {
                 const element = Abi[i];
-                if (element?.type == "function" && element?.stateMutability == "view") {
+                if (element?.type === "function" && element?.stateMutability === "view") {
                     arr.push(element)
-                } else if (element?.type == "function" && (element?.stateMutability == "nonpayable" || element?.stateMutability == "payable")) {
+                } else if (element?.type === "function" && (element?.stateMutability === "nonpayable" || element?.stateMutability === "payable")) {
                     arr1.push(element)
                 }
             }
@@ -148,11 +161,18 @@ function TokenDetails() {
         }
     }
 
+    // Controlled dynamic input change
+    const handleAbiInputChange = (funcName, inputName, value) => {
+        setAbiInputs(prev => ({
+            ...prev,
+            [`${funcName}_${inputName}`]: value
+        }));
+    };
+
     //set only non input type view functions
     const setTokens = async (item) => {
         var datas = await ContractInstances[item?.name]().call()
-
-        if (typeof (datas) === "object") {
+        if (typeof (datas) === "object" && datas !== null) {
             var entryes = Object.entries(datas)
             for (let i = 0; i < entryes.length; i++) {
                 const element = entryes[i];
@@ -161,25 +181,20 @@ function TokenDetails() {
                     text: `${element[0]}: ${element[1]}`
                 }).appendTo(`.div_${item?.name}`);
             }
-
-            // $(`.view_${item}`).html(bals)
         } else {
             $(`.view_${item?.name}`).html(datas)
         }
     }
-
 
     const setInputs = async (item, itm) => {
         try {
             var objs = []
             for (let i = 0; i < itm.length; i++) {
                 const element = itm[i];
-                var values = $(`.inner_${item}_${element?.name}`).val()
-                objs.push(values)
+                objs.push(abiInputs[`${item}_${element?.name}`] ?? "");
             }
             var bals = await ContractInstances[item](...objs).call({ from: address })
-            console.log("🚀 ~ setInputs ~ bals:", Object.entries(bals), typeof (bals), `div_${item}`)
-            if (typeof (bals) === "object") {
+            if (typeof (bals) === "object" && bals !== null) {
                 var entryes = Object.entries(bals)
                 for (let i = 0; i < entryes.length; i++) {
                     const element = entryes[i];
@@ -188,8 +203,6 @@ function TokenDetails() {
                         text: `${element[0]}: ${element[1]}`
                     }).appendTo(`.div_${item}`);
                 }
-
-                // $(`.view_${item}`).html(bals)
             } else {
                 typeof (bals) == 'bigint' ?
                     $(`.view_${item}`).html(bals.toString()) :
@@ -199,8 +212,6 @@ function TokenDetails() {
             console.log("🚀 ~ setInputs ~ error:", error)
             toast.error(error?.message)
         }
-
-
     }
 
     //set only non input type Send functions
@@ -229,13 +240,9 @@ function TokenDetails() {
         var objs = []
         for (let i = 0; i < itm.length; i++) {
             const element = itm[i];
-            var values = $(`.inner_${item}_${element?.name}`).val()
-            objs.push(values)
+            objs.push(abiInputs[`${item}_${element?.name}`] ?? "");
         }
-        console.log("setInputs1  objs:", objs)
-        console.log("setInputs1  item:", item)
         var bals = await ContractInstances[item](...objs).send({ from: address })
-        console.log("🚀 ~ setInputs1 ~ bals:", bals, `${urls}/tx/${bals?.transactionHash}`)
         if (bals) {
             $('<a/>', {
                 class: 'new-a',
@@ -258,29 +265,36 @@ function TokenDetails() {
                 flexDirection: 'column',
                 margin: '0 auto'
             }} >
-
                 <FormControl sx={{ m: 1, minWidth: 80 }}>
-                    <InputLabel id="demo-simple-select-autowidth-label">Select Network</InputLabel>
+                    <InputLabel id="network-label">Select Network</InputLabel>
                     <Select
-                        labelId="demo-simple-select-autowidth-label"
-                        id="demo-simple-select-autowidth"
-                        // value={selectedNetwork}
-                        onChange={(e) => { setSelectedNetwork(e.target.value); }}
+                        labelId="network-label"
+                        id="network-select"
+                        value={selectedNetwork ?? ""}
+                        onChange={e => setSelectedNetwork(e.target.value)}
                         autoWidth
                         label="Select Network"
                     >
-                        {
-                            networkList?.map((item, index) => {
-                                return (
-                                    <MenuItem key={index} value={JSON.stringify(item?.value)} >{item?.label}</MenuItem>
-                                )
-                            })
-                        }
+                        {networkList?.map((item, index) => (
+                            <MenuItem key={index} value={item?.value === "" ? "" : JSON.stringify(item?.value)}>
+                                {item?.label}
+                            </MenuItem>
+                        ))}
                     </Select>
                 </FormControl>
-                <div>Balance: {Balance}</div>
-                <TextField type="text" placeholder="Contract Address" aria-label="default input example" onChange={(e) => { setContractAddress(e.target.value) }} />
-                <Button color="primary" style={{ color: 'black', borderColor: "black" }} variant="outlined" onClick={() => { getContractAbi(); }} >Token Details</Button>
+                <div>Balance: {loader ? < CircularProgress size={20} /> : Balance} </div>
+                <TextField
+                    type="text"
+                    placeholder="Contract Address"
+                    aria-label="default input example"
+                    value={contractAddress ?? ""}
+                    onChange={e => { setContractAddress(e.target.value); setContractAddErr('') }}
+                />
+                {
+                    contractAddErr ?
+                        <div style={{ color: 'red' }}>{contractAddErr}</div> : null
+                }
+                <Button color="primary" style={{ color: 'black', borderColor: "black" }} variant="outlined" onClick={getContractAbi} >Token Details</Button>
                 <Button color="primary" style={{ color: 'black', borderColor: "black" }} variant="outlined" onClick={() => { router.back() }} >Back</Button>
             </div>
             {
@@ -288,14 +302,13 @@ function TokenDetails() {
                 <div className='main_div'>
                     <div className='read_div'>
                         {
-                            viewContract?.length > 0 &&
                             viewContract?.map((item, index) => {
-                                if (item?.inputs.length == 0) {
+                                if (item?.inputs.length === 0) {
                                     return (
                                         <div key={index} >
                                             <h2 className={`div_${item?.name}`} > {item?.name}</h2 >
                                             <div className={`view_${item?.name}`} ></div>
-                                            <Button color="primary" style={{ color: 'black', borderColor: "black" }} variant="outlined" onClick={() => { setTokens(item); console.log(item, "items") }} >Sumbit</Button>
+                                            <Button color="primary" style={{ color: 'black', borderColor: "black" }} variant="outlined" onClick={() => { setTokens(item); }} >Sumbit</Button>
                                             <hr style={{ border: '3px solid', color: 'black' }} />
                                         </div>
                                     )
@@ -303,29 +316,34 @@ function TokenDetails() {
                                     return (
                                         <div key={index}>
                                             <h2 className={`div_${item?.name}`}>{item?.name}</h2>
-                                            {item?.inputs?.map((itm, idx) => {
-                                                return (
-                                                    <div key={idx}>
-                                                        <h4>{itm?.name}</h4>
-                                                        <TextField type="text" placeholder={itm?.type} aria-label="default input example" className={`inner_${item?.name}_${itm?.name}`} />
-                                                    </div>
-                                                )
-                                            })}
+                                            {item?.inputs?.map((itm, idx) => (
+                                                <div key={idx}>
+                                                    <h4>{itm?.name}</h4>
+                                                    <TextField
+                                                        type="text"
+                                                        placeholder={itm?.type}
+                                                        aria-label="default input example"
+                                                        className={`inner_${item?.name}_${itm?.name}`}
+                                                        value={abiInputs[`${item?.name}_${itm?.name}`] ?? ""}
+                                                        onChange={e =>
+                                                            handleAbiInputChange(item?.name, itm?.name, e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                            ))}
                                             <div className={`view_${item?.name}`} ></div>
                                             <Button color="primary" style={{ color: 'black', borderColor: "black" }} variant="outlined" onClick={() => { setInputs(item?.name, item?.inputs) }} >Sumbit</Button>
                                             <hr style={{ border: '3px solid', color: 'black' }} />
                                         </div>
                                     )
-
                                 }
                             })
                         }
                     </div>
                     <div className='write_div'>
                         {
-                            writeContract?.length > 0 &&
                             writeContract?.map((item, index) => {
-                                if (item?.inputs.length == 0) {
+                                if (item?.inputs.length === 0) {
                                     return (
                                         <div key={index}>
                                             <h2 className={`div_${item?.name}`} > {item?.name}</h2 >
@@ -338,30 +356,33 @@ function TokenDetails() {
                                     return (
                                         <div key={index}>
                                             <h2 className={`div_${item?.name}`} > {item?.name}</h2 >
-                                            {item?.inputs?.map((itm, idx1) => {
-                                                return (
-                                                    <div key={idx1} >
-                                                        <h4>{itm?.name}</h4>
-                                                        <TextField type="text" placeholder={itm?.type} aria-label="default input example" className={`inner_${item?.name}_${itm?.name}`} />
-                                                    </div>
-                                                )
-                                            })}
+                                            {item?.inputs?.map((itm, idx1) => (
+                                                <div key={idx1} >
+                                                    <h4>{itm?.name}</h4>
+                                                    <TextField
+                                                        type="text"
+                                                        placeholder={itm?.type}
+                                                        aria-label="default input example"
+                                                        className={`inner_${item?.name}_${itm?.name}`}
+                                                        value={abiInputs[`${item?.name}_${itm?.name}`] ?? ""}
+                                                        onChange={e =>
+                                                            handleAbiInputChange(item?.name, itm?.name, e.target.value)
+                                                        }
+                                                    />
+                                                </div>
+                                            ))}
                                             <div className={`view_${item?.name}`} ></div>
                                             <Button color="primary" style={{ color: 'black', borderColor: "black" }} variant="outlined" onClick={() => { setInputs1(item?.name, item?.inputs) }} >Sumbit</Button>
                                             <hr style={{ border: '3px solid', color: 'black' }} />
                                         </div>
                                     )
-
                                 }
                             })
                         }
                     </div>
                 </div>
             }
-
         </div >
     )
-
-
 }
 export default TokenDetails;

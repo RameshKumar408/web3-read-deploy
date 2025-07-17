@@ -1,9 +1,10 @@
 'use client'
 import { useEffect, useState } from "react";
 import Web3 from "web3";
-import { useAppKitNetwork, useAppKitProvider } from "@reown/appkit/react";
+import { useAppKitNetwork, useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
 import { polygon, mainnet, bscTestnet, bsc, polygonAmoy, sepolia } from '@reown/appkit/networks';
 import { useForm } from 'react-hook-form';
+import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'axios'
 import TextField from '@mui/material/TextField';
 import InputLabel from '@mui/material/InputLabel';
@@ -12,6 +13,8 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Button from '@mui/material/Button';
 import toast from 'react-hot-toast';
+import { useRouter } from "next/navigation";
+
 export default function Home() {
   const { walletProvider } = useAppKitProvider('eip155')
   const web3 = new Web3(walletProvider)
@@ -21,6 +24,7 @@ export default function Home() {
   //     await window.ethereum.request({ method: 'eth_requestAccounts' });
   //   }
   // }, [])
+  const router = useRouter();
 
   const { register, handleSubmit, formState: { errors } } = useForm();
 
@@ -33,18 +37,58 @@ export default function Home() {
     { label: 'Polygon', value: polygon },
     { label: 'Polygon Amoy', value: polygonAmoy },
   ])
-
+  const { address, isConnected } = useAppKitAccount()
   const { chainId, switchNetwork } = useAppKitNetwork()
 
   const [selectedNetwork, setSelectedNetwork] = useState('')
 
   useEffect(() => {
     if (selectedNetwork) {
+      setLoader(true)
       switchNetwork(JSON.parse(selectedNetwork))
     }
   }, [selectedNetwork])
 
-  const [deployContractAddress, setdeployContractAddress] = useState()
+  const [deployContractAddress, setdeployContractAddress] = useState("")
+
+  const [Balance, setBalance] = useState("0")
+
+  const [loader, setLoader] = useState(false)
+
+  const checkBalance = async () => {
+
+    if (!address) {
+      setBalance("0");
+      return;
+    }
+    try {
+      const bal = await web3.eth.getBalance(address)
+      setBalance(web3.utils.fromWei(bal, "ether") ?? "0")
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+      setBalance("0");
+    }
+    setLoader(false)
+  }
+
+  useEffect(() => {
+    if (chainId && address) {
+      if (chainId == 1) {
+        setSelectedNetwork(JSON.stringify(mainnet))
+      } else if (chainId == 97) {
+        setSelectedNetwork(JSON.stringify(bscTestnet))
+      } else if (chainId == 56) {
+        setSelectedNetwork(JSON.stringify(bsc))
+      } else if (chainId == 11155111) {
+        setSelectedNetwork(JSON.stringify(sepolia))
+      } else if (chainId == 137) {
+        setSelectedNetwork(JSON.stringify(polygon))
+      } else if (chainId == 80002) {
+        setSelectedNetwork(JSON.stringify(polygonAmoy))
+      }
+      checkBalance()
+    }
+  }, [chainId, address])
 
 
   // Handle form submission
@@ -173,7 +217,7 @@ export default function Home() {
         <Select
           labelId="demo-simple-select-autowidth-label"
           id="demo-simple-select-autowidth"
-          // value={selectedNetwork}
+          value={selectedNetwork || ""}
           onChange={(e) => { setSelectedNetwork(e.target.value); }}
           autoWidth
           label="Select Network"
@@ -187,6 +231,9 @@ export default function Home() {
           }
         </Select>
       </FormControl>
+
+      <div>Address:{address} </div>
+      <div>Balance: {loader ? < CircularProgress size={20} /> : Balance} </div>
       <form style={{ display: 'flex', flexDirection: 'column', gap: '25px', width: '50%' }} onSubmit={handleSubmit(onSubmit)} >
         <TextField type='text' id='name' placeholder='name' {...register('name', { required: true })} />
         {errors?.name && <span>Please Enter Name</span>}
@@ -201,6 +248,8 @@ export default function Home() {
         <Button color="primary" style={{ color: 'black', borderColor: "black" }} variant="outlined" type='submit' >Submit</Button>
       </form>
       <a href={deployContractAddress} >{deployContractAddress}</a>
+
+      <Button onClick={() => { router.push('/') }} >Back</Button>
     </div>
   );
 }
