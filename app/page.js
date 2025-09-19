@@ -15,22 +15,62 @@ export default function Home() {
     return (
         <Fragment>
             <div style={{ textAlign: 'center' }}  >
-                <h1>Web3 Products</h1>
+                <h1 className="title-neon" >WEB3 PRODUCTS</h1>
                 <div>
                     {/* <Button variant="outlined" style={{ color: 'black', borderColor: "black" }} onClick={handleConnectWallet} >Connect TON Wallet</Button> */}
                     {
                         isConnected == false &&
-                        <Button variant="outlined" style={{ color: 'black', borderColor: "black" }} onClick={() => { open() }} >Connect Wallet</Button>
+                        <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { open() }} >
+                            <div className="button-chrome"></div>
+                            <span className="button-text">CONNECT WALLET</span>
+                            <div className="button-loader">
+                                <div className="y2k-spinner">
+                                    <div className="spinner-ring ring-1"></div>
+                                    <div className="spinner-ring ring-2"></div>
+                                    <div className="spinner-ring ring-3"></div>
+                                </div>
+                            </div>
+                            <div className="button-hologram"></div>
+
+                        </Button>
                     }
 
                     {
                         isConnected == true &&
-                        <Fragment>
+                        <div style={{ color: "white" }}>
                             Address: <h3>{address}</h3>
                             ChainId: <h4>{chainId}</h4>
-                            <Button variant="outlined" style={{ color: 'black', borderColor: "black" }} onClick={() => { router.push('/erc20Deploy') }} >Token Creation</Button>
-                            <Button variant="outlined" style={{ color: 'black', borderColor: "black" }} onClick={() => { router.push('/tokenDetails') }} >Token Details</Button>
-                        </Fragment>
+                            <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/erc20Deploy') }} >
+
+
+                                <div className="button-chrome"></div>
+                                <span className="button-text"> Token Creation</span>
+                                <div className="button-loader">
+                                    <div className="y2k-spinner">
+                                        <div className="spinner-ring ring-1"></div>
+                                        <div className="spinner-ring ring-2"></div>
+                                        <div className="spinner-ring ring-3"></div>
+                                    </div>
+                                </div>
+                                <div className="button-hologram"></div>
+
+                            </Button>
+                            {"    "}
+                            <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/tokenDetails') }} >
+
+
+                                <div className="button-chrome"></div>
+                                <span className="button-text">  Token Details</span>
+                                <div className="button-loader">
+                                    <div className="y2k-spinner">
+                                        <div className="spinner-ring ring-1"></div>
+                                        <div className="spinner-ring ring-2"></div>
+                                        <div className="spinner-ring ring-3"></div>
+                                    </div>
+                                </div>
+                                <div className="button-hologram"></div>
+                            </Button>
+                        </div>
                     }
                 </div>
             </div>

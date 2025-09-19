@@ -63,6 +63,7 @@ export default function Home() {
     }
     try {
       const bal = await web3.eth.getBalance(address)
+      console.log("🚀 ~ checkBalance ~ bal:", bal, address)
       setBalance(web3.utils.fromWei(bal, "ether") ?? "0")
     } catch (error) {
       console.error("Error fetching balance:", error);
@@ -90,6 +91,8 @@ export default function Home() {
     }
   }, [chainId, address])
 
+  const [loading, setLoading] = useState(false)
+
 
   // Handle form submission
   const onSubmit = async (data) => {
@@ -97,6 +100,7 @@ export default function Home() {
       if (!selectedNetwork) return toast.error("Please enter contract address")
       const accounts = await web3.eth.getAccounts();
       console.log(data);
+      setLoading(true)
       const res = await fetch('/api/compile', {
         method: 'POST',
         headers: {
@@ -125,27 +129,27 @@ export default function Home() {
         gas,
         gasPrice: 10000000000,
       });
-      let url
-      var apikey
-      if (chainId == 97) {
-        url = process.env.NEXT_PUBLIC_BSC_TEST_URL
-        apikey = process.env.NEXT_PUBLIC_BSC_API
-      } else if (chainId == 56) {
-        url = process.env.NEXT_PUBLIC_BSC_URL
-        apikey = process.env.NEXT_PUBLIC_BSC_API
-      } else if (chainId == 11155111) {
-        url = process.env.NEXT_PUBLIC_ETH_TEST_URL
-        apikey = process.env.NEXT_PUBLIC_ETH_API
-      } else if (chainId == 1) {
-        url = process.env.NEXT_PUBLIC_ETH_URL
-        apikey = process.env.NEXT_PUBLIC_ETH_API
-      } else if (chainId == 137) {
-        url = process.env.NEXT_PUBLIC_POLY_URL
-        apikey = process.env.NEXT_PUBLIC_POLY_API
-      } else if (chainId == 80002) {
-        url = process.env.NEXT_PUBLIC_POLY_TEST_URL
-        apikey = process.env.NEXT_PUBLIC_POLY_API
-      }
+      let url = process.env.NEXT_PUBLIC_ETH_URL
+      var apikey = process.env.NEXT_PUBLIC_ETH_API
+      // if (chainId == 97) {
+      //   url = process.env.NEXT_PUBLIC_ETH_URL
+      //   apikey = process.env.NEXT_PUBLIC_BSC_API
+      // } else if (chainId == 56) {
+      //   url = process.env.NEXT_PUBLIC_ETH_URL
+      //   apikey = process.env.NEXT_PUBLIC_BSC_API
+      // } else if (chainId == 11155111) {
+      //   url = process.env.NEXT_PUBLIC_ETH_URL
+      //   apikey = process.env.NEXT_PUBLIC_ETH_API
+      // } else if (chainId == 1) {
+      //   url = process.env.NEXT_PUBLIC_ETH_URL
+      //   apikey = process.env.NEXT_PUBLIC_ETH_API
+      // } else if (chainId == 137) {
+      //   url = process.env.NEXT_PUBLIC_ETH_URL
+      //   apikey = process.env.NEXT_PUBLIC_POLY_API
+      // } else if (chainId == 80002) {
+      //   url = process.env.NEXT_PUBLIC_ETH_URL
+      //   apikey = process.env.NEXT_PUBLIC_POLY_API
+      // }
 
       var urls
       if (chainId == 56) {
@@ -161,47 +165,55 @@ export default function Home() {
       } else if (chainId == 80002) {
         urls = process.env.NEXT_PUBLIC_POLURL_TEST_WEB
       }
-
+      console.log(chainId, "chainId")
       setdeployContractAddress(`${urls}/address/${tx?._address}`)
-      const response = await axios.post(`${url}/api`, {
-        apikey: apikey,
-        module: 'contract',
-        action: 'verifysourcecode',
-        contractaddress: tx?._address,
-        sourceCode: `${datas?.result?.sourceCode}`,
-        codeformat: 'solidity-single-file',
-        contractname: data.contract_name, // Replace with your contract name
-        compilerversion: 'v0.8.28+commit.7893614a',
-        optimizationUsed: 0,
-        runs: 200, // Number of optimization runs
-        constructorArguements: '',
-        evmversion: '',
-        licenseType: 3 // SPDX License Type (1 for No License, 2 for MIT, etc.)
-      }, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+
+      setTimeout(async () => {
+        const response = await axios.post(`${url}/api?chainid=${chainId}`, {
+          chainid: chainId,
+          apikey: apikey,
+          module: 'contract',
+          action: 'verifysourcecode',
+          contractaddress: tx?._address,
+          sourceCode: `${datas?.result?.sourceCode}`,
+          codeformat: 'solidity-single-file',
+          contractname: data.contract_name, // Replace with your contract name
+          compilerversion: 'v0.8.28+commit.7893614a',
+          optimizationUsed: 0,
+          runs: 200, // Number of optimization runs
+          constructorArguements: '',
+          evmversion: '',
+          licenseType: 3 // SPDX License Type (1 for No License, 2 for MIT, etc.)
+        }, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
         },
-      },
-      );
-      if (response?.data?.message == 'OK') {
-        var uid = response?.data?.result
-        const resp = await axios.post(`https://api-testnet.bscscan.com/api`, null, {
-          params: {
-            apikey: apikey,
-            module: 'contract',
-            action: 'checkverifystatus',
-            guid: uid,
-          }
-        });
-        if (resp) {
-          if (resp.data?.status === 1) {
-            alert(resp?.data?.result);
-          } else {
-            alert(resp?.data?.result);
+        );
+        console.log(response?.data, "response?.data")
+        if (response?.data?.message == 'OK') {
+          var uid = response?.data?.result
+          const resp = await axios.post(`https://api-testnet.bscscan.com/api`, null, {
+            params: {
+              apikey: apikey,
+              module: 'contract',
+              action: 'checkverifystatus',
+              guid: uid,
+            }
+          });
+          if (resp) {
+            if (resp.data?.status === 1) {
+              alert(resp?.data?.result);
+            } else {
+              alert(resp?.data?.result);
+            }
           }
         }
-      }
+      }, 2000);
+
+      setLoading(false)
     } catch (error) {
+      setLoading(false)
       console.log(error, "error")
     }
 
@@ -209,47 +221,135 @@ export default function Home() {
 
 
   return (
-    <div className="main_div1">
-      <h1 style={{ textAlign: 'center' }} >Token Deploy</h1>
+    <div className="login-container">
+      <div className="future-card" >
+        <div className="main_div1">
+          <h1 style={{ textAlign: 'center' }} className="title-neon" >TOKEN DEPLOY</h1>
 
-      <FormControl sx={{ m: 1, minWidth: 80 }}>
-        <InputLabel id="demo-simple-select-autowidth-label">Select Network</InputLabel>
-        <Select
-          labelId="demo-simple-select-autowidth-label"
-          id="demo-simple-select-autowidth"
-          value={selectedNetwork || ""}
-          onChange={(e) => { setSelectedNetwork(e.target.value); }}
-          autoWidth
-          label="Select Network"
-        >
-          {
-            networkList?.map((item, index) => {
-              return (
-                <MenuItem key={index} value={JSON.stringify(item?.value)} >{item?.label}</MenuItem>
-              )
-            })
-          }
-        </Select>
-      </FormControl>
 
-      <div>Address:{address} </div>
-      <div>Balance: {loader ? < CircularProgress size={20} /> : Balance} </div>
-      <form style={{ display: 'flex', flexDirection: 'column', gap: '25px', width: '50%' }} onSubmit={handleSubmit(onSubmit)} >
-        <TextField type='text' id='name' placeholder='name' {...register('name', { required: true })} />
-        {errors?.name && <span>Please Enter Name</span>}
-        <TextField type='text' id='symbol' placeholder='symbol' {...register('symbol', { required: true })} />
-        {errors?.symbol && <span>Please Enter Symbol</span>}
-        <TextField type='text' id='decimal' placeholder='decimal' {...register('decimal', { required: true })} />
-        {errors?.decimal && <span>Please Enter Decimal</span>}
-        <TextField type='text' id='total_supply' placeholder='total supply' {...register('total_supply', { required: true })} />
-        {errors?.total_supply && <span>Please Enter Total Supply</span>}
-        <TextField type='text' id='contract_name' placeholder='contract name' {...register('contract_name', { required: true })} />
-        {errors?.contract_name && <span>Please Enter Contract Name</span>}
-        <Button color="primary" style={{ color: 'black', borderColor: "black" }} variant="outlined" type='submit' >Submit</Button>
-      </form>
-      <a href={deployContractAddress} >{deployContractAddress}</a>
+          <div className="field-chrome" style={{ width: "100%" }}>
+            <div className="chrome-border"></div>
+            <FormControl sx={{ m: 1, width: '100%', color: "white", ".css-w76bbz-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input.css-w76bbz-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input.css-w76bbz-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input": { color: "white" } }}>
+              {/* <InputLabel id="demo-simple-select-autowidth-label">Select Network</InputLabel> */}
+              <Select
+                labelId="demo-simple-select-autowidth-label"
+                id="demo-simple-select-autowidth"
+                value={selectedNetwork || ""}
+                onChange={(e) => { setSelectedNetwork(e.target.value); }}
+                autoWidth
+                label="Select Network"
+              >
+                {
+                  networkList?.map((item, index) => {
+                    return (
+                      <MenuItem key={index} value={JSON.stringify(item?.value)} >{item?.label}</MenuItem>
+                    )
+                  })
+                }
+              </Select>
+            </FormControl>
+            <div className="field-hologram"></div>
+          </div>
 
-      <Button onClick={() => { router.push('/') }} >Back</Button>
+
+
+          <div>Address:{address} </div>
+          <div>Balance: {loader ? < CircularProgress size={20} /> : Balance} </div>
+          <form style={{ display: 'flex', flexDirection: 'column', width: '100%' }} onSubmit={handleSubmit(onSubmit)} >
+
+
+            <div className="retro-field">
+              <div className="field-chrome">
+                <div className="chrome-border"></div>
+                <input type='text' id='name' placeholder='name' {...register('name', { required: true })} />
+                {/* <label for="email">Email Address</label> */}
+                <div className="field-hologram"></div>
+              </div>
+              <span className="retro-error" id="emailError">{errors?.name && <span style={{ color: 'red' }}>Please Enter Name</span>}</span>
+            </div>
+
+            <div className="retro-field">
+              <div className="field-chrome">
+                <div className="chrome-border"></div>
+                <input type='text' id='symbol' placeholder='symbol' {...register('symbol', { required: true })} />
+                {/* <label for="email">Email Address</label> */}
+                <div className="field-hologram"></div>
+              </div>
+              <span className="retro-error" id="emailError">{errors?.symbol && <span style={{ color: 'red' }}>Please Enter Symbol</span>}</span>
+            </div>
+
+            <div className="retro-field">
+              <div className="field-chrome">
+                <div className="chrome-border"></div>
+                <input type='text' id='decimal' placeholder='decimal' {...register('decimal', { required: true })} />
+                {/* <label for="email">Email Address</label> */}
+                <div className="field-hologram"></div>
+              </div>
+              <span className="retro-error" id="emailError">  {errors?.decimal && <span style={{ color: 'red' }}>Please Enter Decimal</span>}</span>
+            </div>
+
+            <div className="retro-field">
+              <div className="field-chrome">
+                <div className="chrome-border"></div>
+                <input type='text' id='total_supply' placeholder='total supply' {...register('total_supply', { required: true })} />
+                {/* <label for="email">Email Address</label> */}
+                <div className="field-hologram"></div>
+              </div>
+              <span className="retro-error" id="emailError">{errors?.total_supply && <span style={{ color: 'red' }}>Please Enter Total Supply</span>}</span>
+            </div>
+
+            <div className="retro-field">
+              <div className="field-chrome">
+                <div className="chrome-border"></div>
+                <input type='text' id='contract_name' placeholder='contract name' {...register('contract_name', { required: true })} />
+                {/* <label for="email">Email Address</label> */}
+                <div className="field-hologram"></div>
+              </div>
+              <span className="retro-error" id="emailError"> {errors?.contract_name && <span style={{ color: 'red' }}>Please Enter Contract Name</span>}</span>
+            </div>
+
+
+            {/* <TextField type='text' id='name' placeholder='name' {...register('name', { required: true })} /> */}
+            {/* {errors?.name && <span style={{ color: 'red' }}>Please Enter Name</span>} */}
+            {/* <TextField type='text' id='symbol' placeholder='symbol' {...register('symbol', { required: true })} />
+            {errors?.symbol && <span style={{ color: 'red' }}>Please Enter Symbol</span>} */}
+            {/* <TextField type='text' id='decimal' placeholder='decimal' {...register('decimal', { required: true })} />
+            {errors?.decimal && <span style={{ color: 'red' }}>Please Enter Decimal</span>}
+            <TextField type='text' id='total_supply' placeholder='total supply' {...register('total_supply', { required: true })} />
+            {errors?.total_supply && <span style={{ color: 'red' }}>Please Enter Total Supply</span>}
+            <TextField type='text' id='contract_name' placeholder='contract name' {...register('contract_name', { required: true })} />
+            {errors?.contract_name && <span style={{ color: 'red' }}>Please Enter Contract Name</span>} */}
+            <Button style={{ height: "45px", color: "white" }} type='submit' disabled={loading} >
+              <div className="button-chrome"></div>
+              <span className="button-text"> Submit</span>
+              <div className="button-loader">
+                <div className="y2k-spinner">
+                  <div className="spinner-ring ring-1"></div>
+                  <div className="spinner-ring ring-2"></div>
+                  <div className="spinner-ring ring-3"></div>
+                </div>
+              </div>
+              <div className="button-hologram"></div>
+
+            </Button>
+          </form>
+          <a href={deployContractAddress} >{deployContractAddress}</a>
+
+          <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/') }} >
+
+            <div className="button-chrome"></div>
+            <span className="button-text"> Back</span>
+            <div className="button-loader">
+              <div className="y2k-spinner">
+                <div className="spinner-ring ring-1"></div>
+                <div className="spinner-ring ring-2"></div>
+                <div className="spinner-ring ring-3"></div>
+              </div>
+            </div>
+            <div className="button-hologram"></div>
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
