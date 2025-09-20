@@ -31,139 +31,106 @@ export default function Home() {
   // }, [])
   const router = useRouter();
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm();
-
   const [networkList, setNetworkList] = useState([
-    { label: 'Select Network' },
-    { label: 'Ethereum', value: mainnet },
-    { label: 'Sepolia', value: sepolia },
-    { label: 'BSC Testnet', value: bscTestnet },
-    { label: 'BSC Mainnet', value: bsc },
-    { label: 'Polygon', value: polygon },
-    { label: 'Polygon Amoy', value: polygonAmoy },
+    { label: "Ethereum Mainnet", value: 1 },
+    { label: "Sepolia Testnet", value: 11155111 },
+    { label: "Holesky Testnet", value: 17000 },
+    { label: "Hoodi Testnet", value: 560048 },
+    { label: "Abstract Mainnet", value: 2741 },
+    { label: "Abstract Sepolia Testnet", value: 11124 },
+    { label: "ApeChain Curtis Testnet", value: 33111 },
+    { label: "ApeChain Mainnet", value: 33139 },
+    { label: "Arbitrum Nova Mainnet", value: 42170 },
+    { label: "Arbitrum One Mainnet", value: 42161 },
+    { label: "Arbitrum Sepolia Testnet", value: 421614 },
+    { label: "Avalanche C-Chain", value: 43114 },
+    { label: "Avalanche Fuji Testnet", value: 43113 },
+    { label: "Base Mainnet", value: 8453 },
+    { label: "Base Sepolia Testnet", value: 84532 },
+    { label: "Berachain Mainnet", value: 80094 },
+    { label: "Berachain Bepolia Testnet", value: 80069 },
+    { label: "BitTorrent Chain Mainnet", value: 199 },
+    { label: "BitTorrent Chain Testnet", value: 1029 },
+    { label: "Blast Mainnet", value: 81457 },
+    { label: "Blast Sepolia Testnet", value: 168587773 },
+    { label: "BNB Smart Chain Mainnet", value: 56 },
+    { label: "BNB Smart Chain Testnet", value: 97 },
+    { label: "Celo Alfajores Testnet", value: 44787 },
+    { label: "Celo Mainnet", value: 42220 },
+    { label: "Cronos Mainnet", value: 25 },
+    { label: "Fraxtal Mainnet", value: 252 },
+    { label: "Fraxtal Testnet", value: 2522 },
+    { label: "Gnosis", value: 100 },
+    { label: "HyperEVM Mainnet", value: 999 },
+    { label: "Linea Mainnet", value: 59144 },
+    { label: "Linea Sepolia Testnet", value: 59141 },
+    { label: "Mantle Mainnet", value: 5000 },
+    { label: "Mantle Sepolia Testnet", value: 5003 },
+    { label: "Memecore Testnet", value: 43521 },
+    { label: "Moonbase Alpha Testnet", value: 1287 },
+    { label: "Monad Testnet", value: 10143 },
+    { label: "Moonbeam Mainnet", value: 1284 },
+    { label: "Moonriver Mainnet", value: 1285 },
+    { label: "OP Mainnet", value: 10 },
+    { label: "OP Sepolia Testnet", value: 11155420 },
+    { label: "Polygon Amoy Testnet", value: 80002 },
+    { label: "Polygon zkEVM Cardona Testnet", value: 2442 },
+    { label: "Polygon zkEVM Mainnet", value: 1101 },
+    { label: "Polygon Mainnet", value: 137 },
+    { label: "Katana Mainnet", value: 747474 },
+    { label: "Sei Mainnet", value: 1329 },
+    { label: "Sei Testnet", value: 1328 },
+    { label: "Scroll Mainnet", value: 534352 },
+    { label: "Scroll Sepolia Testnet", value: 534351 },
+    { label: "Sonic Testnet", value: 14601 },
+    { label: "Sonic Mainnet", value: 146 },
+    { label: "Sophon Mainnet", value: 50104 },
+    { label: "Sophon Sepolia Testnet", value: 531050104 },
+    { label: "Swellchain Mainnet", value: 1923 },
+    { label: "Swellchain Testnet", value: 1924 },
+    { label: "Taiko Hekla L2 Testnet", value: 167009 },
+    { label: "Taiko Mainnet", value: 167000 },
+    { label: "Unichain Mainnet", value: 130 },
+    { label: "Unichain Sepolia Testnet", value: 1301 },
+    { label: "World Mainnet", value: 480 },
+    { label: "World Sepolia Testnet", value: 4801 },
+    { label: "XDC Apothem Testnet", value: 51 },
+    { label: "XDC Mainnet", value: 50 },
+    { label: "zkSync Mainnet", value: 324 },
+    { label: "zkSync Sepolia Testnet", value: 300 },
+    { label: "opBNB Mainnet", value: 204 },
+    { label: "opBNB Testnet", value: 5611 }
   ])
   const { address, isConnected } = useAppKitAccount()
-  const { chainId, switchNetwork } = useAppKitNetwork()
 
-  const [selectedNetwork, setSelectedNetwork] = useState('')
+  const [selectedNetwork, setSelectedNetwork] = useState(1)
 
-  useEffect(() => {
-    if (selectedNetwork) {
-      setLoader(true)
-      switchNetwork(JSON.parse(selectedNetwork))
-    }
-  }, [selectedNetwork])
-
-  const [deployContractAddress, setdeployContractAddress] = useState("")
-
-  const [Balance, setBalance] = useState("0")
-
-  const [loader, setLoader] = useState(false)
-
-  const checkBalance = async () => {
-
-    if (!address) {
-      setBalance("0");
-      return;
-    }
-    try {
-
-      const bal = await web3.eth.getBalance(address)
-      console.log(chainId, await web3.eth.getChainId(), "chainIdchainId")
-      console.log("🚀 ~ checkBalance ~ bal:", bal, address)
-      setBalance(web3.utils.fromWei(bal, "ether") ?? "0")
-    } catch (error) {
-      console.error("Error fetching balance:", error);
-      setBalance("0");
-    }
-    setLoader(false)
-  }
-
-  useEffect(() => {
-    if (chainId && address) {
-      if (chainId == 1) {
-        setSelectedNetwork(JSON.stringify(mainnet))
-      } else if (chainId == 97) {
-        setSelectedNetwork(JSON.stringify(bscTestnet))
-      } else if (chainId == 56) {
-        setSelectedNetwork(JSON.stringify(bsc))
-      } else if (chainId == 11155111) {
-        setSelectedNetwork(JSON.stringify(sepolia))
-      } else if (chainId == 137) {
-        setSelectedNetwork(JSON.stringify(polygon))
-      } else if (chainId == 80002) {
-        setSelectedNetwork(JSON.stringify(polygonAmoy))
-      }
-
-      checkBalance()
-    }
-  }, [chainId, address])
+  const [userAddress, setUserAddress] = useState("")
 
   const [loading, setLoading] = useState(false)
 
-
-  const [txData, setTxData] = useState("")
-  const [sourceCode, setSourceCode] = useState("")
-  const [contractName, setContractName] = useState("")
+  const [data, setData] = useState([])
 
   // Handle form submission
-  const onSubmit = async (data) => {
+  const getTokenList = async () => {
     try {
-      if (!selectedNetwork) return toast.error("Please enter contract address")
-      const accounts = await web3.eth.getAccounts();
-      console.log(data);
       setLoading(true)
-      const res = await fetch('/api/compile', {
+      setData([])
+      const res = await fetch('/api/getTokenList', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: data.name,
-          symbol: data.symbol,
-          decimal: data.decimal,
-          totalsupply: data.total_supply,
-          contractName: data.contract_name
+          ChainId: selectedNetwork,
+          Address: userAddress,
         }),
       });
 
       const datas = await res.json();
       console.log(datas, "datas")
-
-      const Routercontracts = new web3.eth.Contract(datas?.result?.abi);
-      const RouterdeployedContract = await Routercontracts
-        .deploy({ data: '0x' + datas?.result?.bytecode, arguments: [] })
-      const gas = await RouterdeployedContract.estimateGas({
-        from: accounts[0],
-      });
-      const tx = await RouterdeployedContract.send({
-        from: accounts[0],
-        gas,
-        gasPrice: 10000000000,
-      });
-
-      setTxData(tx)
-      setSourceCode(datas?.result?.sourceCode)
-      setContractName(data?.contract_name)
-      var urls
-      if (chainId == 56) {
-        urls = process.env.NEXT_PUBLIC_BSCURL_WEB
-      } else if (chainId == 97) {
-        urls = process.env.NEXT_PUBLIC_BSCURL_TEST_WEB
-      } else if (chainId == 11155111) {
-        urls = process.env.NEXT_PUBLIC_ETHURL_TEST_WEB
-      } else if (chainId == 1) {
-        urls = process.env.NEXT_PUBLIC_ETHURL_WEB
-      } else if (chainId == 137) {
-        urls = process.env.NEXT_PUBLIC_POLURL_WEB
-      } else if (chainId == 80002) {
-        urls = process.env.NEXT_PUBLIC_POLURL_TEST_WEB
-      }
-      console.log(chainId, "chainId")
-      setdeployContractAddress(`${urls}/address/${tx?._address}`)
+      setData(datas?.result)
       setLoading(false)
-      reset()
-      toast.success("Contract Deployed Successfully")
     } catch (error) {
       setLoading(false)
       console.log(error, "error")
@@ -171,61 +138,12 @@ export default function Home() {
 
   };
 
-  const verifyContract = async () => {
-    try {
-      setLoading(true)
-      let url = process.env.NEXT_PUBLIC_ETH_URL
-      var apikey = process.env.NEXT_PUBLIC_ETH_API
-
-      const response = await axios.post(`${url}/api?chainid=${chainId}`, {
-        chainid: chainId,
-        apikey: apikey,
-        module: 'contract',
-        action: 'verifysourcecode',
-        contractaddress: txData?._address,
-        sourceCode: `${sourceCode}`,
-        codeformat: 'solidity-single-file',
-        contractname: contractName, // Replace with your contract name
-        compilerversion: 'v0.8.28+commit.7893614a',
-        optimizationUsed: 0,
-        runs: 200, // Number of optimization runs
-        constructorArguements: '',
-        evmversion: '',
-        licenseType: 3 // SPDX License Type (1 for No License, 2 for MIT, etc.)
-      }, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      },
-      );
-      console.log(response?.data, "response?.data")
-      if (response?.data?.message == 'OK') {
-        toast.success("contract verified successfully")
-        setdeployContractAddress("")
-        // var uid = response?.data?.result
-        // const resp = await axios.post(`${process.env.NEXT_PUBLIC_ETH_URL}`, null, {
-        //   params: {
-        //     chainid: chainId,
-        //     apikey: apikey,
-        //     module: 'contract',
-        //     action: 'checkverifystatus',
-        //     guid: uid,
-        //   }
-        // });
-        // if (resp) {
-        //   if (resp.data?.status === 1) {
-        //     alert(resp?.data?.result);
-        //   } else {
-        //     alert(resp?.data?.result);
-        //   }
-        // }
-      }
-      setLoading(false)
-    } catch (error) {
-      console.log("🚀 ~ verifyContract ~ error:", error)
-      setLoading(false)
+  useEffect(() => {
+    if (address) {
+      // getTokenList()
+      setUserAddress(address)
     }
-  }
+  }, [address])
 
 
   return (
@@ -262,7 +180,31 @@ export default function Home() {
         </div>
         <div>Address:{address} </div>
 
-        <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/') }} >
+        <div className="retro-field">
+          <div className="field-chrome">
+            <div className="chrome-border"></div>
+            <input type='text' id='symbol' placeholder='Address' value={userAddress} onChange={(e) => { setUserAddress(e.target.value) }} />
+            {/* <label for="email">Email Address</label> */}
+            <div className="field-hologram"></div>
+          </div>
+        </div>
+
+
+        <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { getTokenList(); }} >
+
+          <div className="button-chrome"></div>
+          <span className="button-text"> Search</span>
+          <div className="button-loader">
+            <div className="y2k-spinner">
+              <div className="spinner-ring ring-1"></div>
+              <div className="spinner-ring ring-2"></div>
+              <div className="spinner-ring ring-3"></div>
+            </div>
+          </div>
+          <div className="button-hologram"></div>
+        </Button>
+
+        <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push("/") }} >
 
           <div className="button-chrome"></div>
           <span className="button-text"> Back</span>
@@ -280,26 +222,73 @@ export default function Home() {
       <div>
         <div className="ag-format-container">
           <div className="ag-courses_box">
-            <div className="ag-courses_item">
-              <div className="ag-courses-item_link">
-                <div className="ag-courses-item_bg"></div>
 
-                <div className="ag-courses-item_title">
-                  Name: Ramesh Kumar K
-                </div>
-                <div className="ag-courses-item_title">
-                  Symbol: USDT
-                </div>
-                <div className="ag-courses-item_title">
-                  Balance: 1000000
-                </div>
+            {
+              loading &&
+              <main style={{ margin: 'auto' }}>
+                <svg className="lp" viewBox="0 0 128 128" width="128px" height="128px" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#000" />
+                      <stop offset="100%" stopColor="#fff" />
+                    </linearGradient>
+                    <mask id="mask1">
+                      <rect x="0" y="0" width="128" height="128" fill="url(#grad1)" />
+                    </mask>
+                  </defs>
+                  <g fill="none" strokeLinecap="round" strokeWidth="16">
+                    <circle className="lp__ring" r="56" cx="64" cy="64" stroke="#ddd" />
+                    <g stroke="hsl(183,90%,40%)">
+                      <polyline className="lp__fall-line" points="64,8 64,120" />
+                      <polyline className="lp__fall-line lp__fall-line--delay1" points="64,8 64,120" />
+                      <polyline className="lp__fall-line lp__fall-line--delay2" points="64,8 64,120" />
+                      <polyline className="lp__fall-line lp__fall-line--delay3" points="64,8 64,120" />
+                      <polyline className="lp__fall-line lp__fall-line--delay4" points="64,8 64,120" />
+                      <circle className="lp__drops" r="56" cx="64" cy="64" transform="rotate(90,64,64)" />
+                      <circle className="lp__worm" r="56" cx="64" cy="64" transform="rotate(-90,64,64)" />
+                    </g>
+                    <g stroke="hsl(93,90%,40%)" mask="url(#mask1)">
+                      <polyline className="lp__fall-line" points="64,8 64,120" />
+                      <polyline className="lp__fall-line lp__fall-line--delay1" points="64,8 64,120" />
+                      <polyline className="lp__fall-line lp__fall-line--delay2" points="64,8 64,120" />
+                      <polyline className="lp__fall-line lp__fall-line--delay3" points="64,8 64,120" />
+                      <polyline className="lp__fall-line lp__fall-line--delay4" points="64,8 64,120" />
+                      <circle className="lp__drops" r="56" cx="64" cy="64" transform="rotate(90,64,64)" />
+                      <circle className="lp__worm" r="56" cx="64" cy="64" transform="rotate(-90,64,64)" />
+                    </g>
+                  </g>
+                </svg>
+              </main>
+            }
 
-                <div className="ag-courses-item_date-box">
-                  Start:
-                </div>
-              </div>
+            {
+              data?.length > 0 &&
+              data?.map((item, index) => {
+                return (
+                  <div className="ag-courses_item" key={index}>
+                    <div className="ag-courses-item_link">
+                      <div className="ag-courses-item_bg"></div>
 
-            </div>
+                      <div className="ag-courses-item_title">
+                        Name: {item?.tokenName}
+                      </div>
+                      <div className="ag-courses-item_title">
+                        Symbol:  {item?.tokenSymbol}
+                      </div>
+                      <div className="ag-courses-item_title">
+                        Balance: {item?.balance}
+                      </div>
+
+                      <div className="ag-courses-item_date-box">
+                        contractAddress: {item?.contractAddress?.slice(0, 7) + "..." + item?.contractAddress?.slice(-7)}
+                      </div>
+                    </div>
+
+                  </div>
+                )
+              })
+            }
+
 
           </div>
         </div>
