@@ -357,7 +357,7 @@ contract ${contractName} is ERC20, Ownable {
         ERC20("${name}", "${symbol}")
         Ownable(msg.sender)
     {
-        _mint(msg.sender, ${Number(totalsupply) * (10 ** Number(decimal))});
+        _mint(msg.sender, ${(Number(totalsupply) * (10 ** Number(decimal)))?.toLocaleString('fullwide', { useGrouping: false })});
     }
 
     // Anyone can call mint
@@ -367,6 +367,8 @@ contract ${contractName} is ERC20, Ownable {
 }
 
         `
+
+    console.log(Number(Number(totalsupply) * (10 ** Number(decimal))), "(Number(totalsupply) * (10 ** Number(decimal)))?.toString()")
 
     // Configure the input for the Solidity compiler
     const input = {
@@ -387,6 +389,7 @@ contract ${contractName} is ERC20, Ownable {
 
     // Compile the contract
     const output = JSON.parse(solc.compile(JSON.stringify(input)));
+    console.log("🚀 ~ POST ~ output:", output)
 
     // Extract the ABI and bytecode
     const abi = output?.contracts['MyContract.sol']?.[contractName]?.abi;

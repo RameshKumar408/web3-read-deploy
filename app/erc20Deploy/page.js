@@ -12,12 +12,17 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Button from '@mui/material/Button';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { walletProvider } = useAppKitProvider('eip155')
-  const web3 = new Web3(walletProvider)
+  var web3 = new Web3(walletProvider)
+
+  useEffect(() => {
+    web3 = new Web3(walletProvider)
+  }, [walletProvider])
+
   // useEffect(async () => {
   //   if (window.ethereum) {
   //     web3 = new Web3(window.ethereum)
@@ -26,7 +31,7 @@ export default function Home() {
   // }, [])
   const router = useRouter();
 
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
   const [networkList, setNetworkList] = useState([
     { label: 'Select Network' },
@@ -62,7 +67,9 @@ export default function Home() {
       return;
     }
     try {
+
       const bal = await web3.eth.getBalance(address)
+      console.log(chainId, await web3.eth.getChainId(), "chainIdchainId")
       console.log("🚀 ~ checkBalance ~ bal:", bal, address)
       setBalance(web3.utils.fromWei(bal, "ether") ?? "0")
     } catch (error) {
@@ -87,12 +94,17 @@ export default function Home() {
       } else if (chainId == 80002) {
         setSelectedNetwork(JSON.stringify(polygonAmoy))
       }
+
       checkBalance()
     }
   }, [chainId, address])
 
   const [loading, setLoading] = useState(false)
 
+
+  const [txData, setTxData] = useState("")
+  const [sourceCode, setSourceCode] = useState("")
+  const [contractName, setContractName] = useState("")
 
   // Handle form submission
   const onSubmit = async (data) => {
@@ -129,28 +141,10 @@ export default function Home() {
         gas,
         gasPrice: 10000000000,
       });
-      let url = process.env.NEXT_PUBLIC_ETH_URL
-      var apikey = process.env.NEXT_PUBLIC_ETH_API
-      // if (chainId == 97) {
-      //   url = process.env.NEXT_PUBLIC_ETH_URL
-      //   apikey = process.env.NEXT_PUBLIC_BSC_API
-      // } else if (chainId == 56) {
-      //   url = process.env.NEXT_PUBLIC_ETH_URL
-      //   apikey = process.env.NEXT_PUBLIC_BSC_API
-      // } else if (chainId == 11155111) {
-      //   url = process.env.NEXT_PUBLIC_ETH_URL
-      //   apikey = process.env.NEXT_PUBLIC_ETH_API
-      // } else if (chainId == 1) {
-      //   url = process.env.NEXT_PUBLIC_ETH_URL
-      //   apikey = process.env.NEXT_PUBLIC_ETH_API
-      // } else if (chainId == 137) {
-      //   url = process.env.NEXT_PUBLIC_ETH_URL
-      //   apikey = process.env.NEXT_PUBLIC_POLY_API
-      // } else if (chainId == 80002) {
-      //   url = process.env.NEXT_PUBLIC_ETH_URL
-      //   apikey = process.env.NEXT_PUBLIC_POLY_API
-      // }
 
+      setTxData(tx)
+      setSourceCode(datas?.result?.sourceCode)
+      setContractName(data?.contract_name)
       var urls
       if (chainId == 56) {
         urls = process.env.NEXT_PUBLIC_BSCURL_WEB
@@ -167,51 +161,9 @@ export default function Home() {
       }
       console.log(chainId, "chainId")
       setdeployContractAddress(`${urls}/address/${tx?._address}`)
-
-      setTimeout(async () => {
-        const response = await axios.post(`${url}/api?chainid=${chainId}`, {
-          chainid: chainId,
-          apikey: apikey,
-          module: 'contract',
-          action: 'verifysourcecode',
-          contractaddress: tx?._address,
-          sourceCode: `${datas?.result?.sourceCode}`,
-          codeformat: 'solidity-single-file',
-          contractname: data.contract_name, // Replace with your contract name
-          compilerversion: 'v0.8.28+commit.7893614a',
-          optimizationUsed: 0,
-          runs: 200, // Number of optimization runs
-          constructorArguements: '',
-          evmversion: '',
-          licenseType: 3 // SPDX License Type (1 for No License, 2 for MIT, etc.)
-        }, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        },
-        );
-        console.log(response?.data, "response?.data")
-        if (response?.data?.message == 'OK') {
-          var uid = response?.data?.result
-          const resp = await axios.post(`https://api-testnet.bscscan.com/api`, null, {
-            params: {
-              apikey: apikey,
-              module: 'contract',
-              action: 'checkverifystatus',
-              guid: uid,
-            }
-          });
-          if (resp) {
-            if (resp.data?.status === 1) {
-              alert(resp?.data?.result);
-            } else {
-              alert(resp?.data?.result);
-            }
-          }
-        }
-      }, 2000);
-
       setLoading(false)
+      reset()
+      toast.success("Contract Deployed Successfully")
     } catch (error) {
       setLoading(false)
       console.log(error, "error")
@@ -219,9 +171,66 @@ export default function Home() {
 
   };
 
+  const verifyContract = async () => {
+    try {
+      setLoading(true)
+      let url = process.env.NEXT_PUBLIC_ETH_URL
+      var apikey = process.env.NEXT_PUBLIC_ETH_API
+
+      const response = await axios.post(`${url}/api?chainid=${chainId}`, {
+        chainid: chainId,
+        apikey: apikey,
+        module: 'contract',
+        action: 'verifysourcecode',
+        contractaddress: txData?._address,
+        sourceCode: `${sourceCode}`,
+        codeformat: 'solidity-single-file',
+        contractname: contractName, // Replace with your contract name
+        compilerversion: 'v0.8.28+commit.7893614a',
+        optimizationUsed: 0,
+        runs: 200, // Number of optimization runs
+        constructorArguements: '',
+        evmversion: '',
+        licenseType: 3 // SPDX License Type (1 for No License, 2 for MIT, etc.)
+      }, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+      );
+      console.log(response?.data, "response?.data")
+      if (response?.data?.message == 'OK') {
+        toast.success("contract verified successfully")
+        setdeployContractAddress("")
+        // var uid = response?.data?.result
+        // const resp = await axios.post(`${process.env.NEXT_PUBLIC_ETH_URL}`, null, {
+        //   params: {
+        //     chainid: chainId,
+        //     apikey: apikey,
+        //     module: 'contract',
+        //     action: 'checkverifystatus',
+        //     guid: uid,
+        //   }
+        // });
+        // if (resp) {
+        //   if (resp.data?.status === 1) {
+        //     alert(resp?.data?.result);
+        //   } else {
+        //     alert(resp?.data?.result);
+        //   }
+        // }
+      }
+      setLoading(false)
+    } catch (error) {
+      console.log("🚀 ~ verifyContract ~ error:", error)
+      setLoading(false)
+    }
+  }
+
 
   return (
     <div className="login-container">
+      <Toaster />
       <div className="future-card" >
         <div className="main_div1">
           <h1 style={{ textAlign: 'center' }} className="title-neon" >TOKEN DEPLOY</h1>
@@ -321,7 +330,7 @@ export default function Home() {
             {errors?.contract_name && <span style={{ color: 'red' }}>Please Enter Contract Name</span>} */}
             <Button style={{ height: "45px", color: "white" }} type='submit' disabled={loading} >
               <div className="button-chrome"></div>
-              <span className="button-text"> Submit</span>
+              <span className="button-text"> {loading ? < CircularProgress size={20} /> : "Submit"}</span>
               <div className="button-loader">
                 <div className="y2k-spinner">
                   <div className="spinner-ring ring-1"></div>
@@ -333,7 +342,25 @@ export default function Home() {
 
             </Button>
           </form>
-          <a href={deployContractAddress} >{deployContractAddress}</a>
+          <a target="_blank" style={{ color: "white" }} href={deployContractAddress} >{deployContractAddress}</a>
+
+
+          {
+            txData &&
+            <Button style={{ height: "45px", color: "white" }} disabled={loading} onClick={() => { verifyContract() }} >
+              <div className="button-chrome"></div>
+              <span className="button-text"> {loading ? < CircularProgress size={20} /> : "Verify Contract"}</span>
+              <div className="button-loader">
+                <div className="y2k-spinner">
+                  <div className="spinner-ring ring-1"></div>
+                  <div className="spinner-ring ring-2"></div>
+                  <div className="spinner-ring ring-3"></div>
+                </div>
+              </div>
+              <div className="button-hologram"></div>
+
+            </Button>
+          }
 
           <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/') }} >
 
