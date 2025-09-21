@@ -7,6 +7,7 @@ const networkjson = require('./chainlist.json');
 export async function POST(request) {
     const body = await request.json();
     const { ChainId, Address } = body;
+    console.log("🚀 ~ POST ~ ChainId:", ChainId)
 
     if (!ChainId) {
         return new Response(JSON.stringify({
@@ -71,21 +72,21 @@ export async function POST(request) {
         });
     }
 
-    // Build rpc url arrays
-    let urlsarr = [];
-    let urlsarr1 = [];
-    for (const element of networkjson) {
-        if (element?.chainId == ChainId) {
-            for (const rpc of element.rpc) {
-                if (rpc?.tracking === "none") {
-                    urlsarr.push(rpc?.url);
-                } else {
-                    urlsarr1.push(rpc?.url);
-                }
-            }
-            break;
-        }
-    }
+    // // Build rpc url arrays
+    // let urlsarr = [];
+    // let urlsarr1 = [];
+    // for (const element of networkjson) {
+    //     if (element?.chainId == ChainId) {
+    //         for (const rpc of element.rpc) {
+    //             if (rpc?.tracking === "none") {
+    //                 urlsarr.push(rpc?.url);
+    //             } else {
+    //                 urlsarr1.push(rpc?.url);
+    //             }
+    //         }
+    //         break;
+    //     }
+    // }
 
     // // Combine RPC url arrays for failover
     // const allUrls = [...urlsarr, ...urlsarr1];
