@@ -7,7 +7,7 @@ const networkjson = require('./chainlist.json');
 export async function POST(request) {
     const body = await request.json();
     const { ChainId, Address } = body;
-    console.log("🚀 ~ POST ~ ChainId:", ChainId)
+    console.log("🚀 ~ POST ~ ChainId:", ChainId, Address)
 
     if (!ChainId) {
         return new Response(JSON.stringify({
@@ -50,6 +50,7 @@ export async function POST(request) {
     if (response?.data?.message == "OK" && Array.isArray(response?.data?.result) && response.data.result.length > 0) {
         const datas = response.data.result;
         for (const element of datas) {
+            console.log("🚀 ~ POST ~ element:", element)
             const alreadyExist = erc20.find(item => item.contractAddress === element?.contractAddress);
             if (!alreadyExist) {
                 erc20.push({
