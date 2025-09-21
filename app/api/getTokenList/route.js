@@ -87,43 +87,43 @@ export async function POST(request) {
         }
     }
 
-    // Combine RPC url arrays for failover
-    const allUrls = [...urlsarr, ...urlsarr1];
+    // // Combine RPC url arrays for failover
+    // const allUrls = [...urlsarr, ...urlsarr1];
 
-    // Robust balance fetching with failover
-    let found = false;
-    for (let urlIndex = 0; urlIndex < allUrls.length && !found; urlIndex++) {
-        const rpcUrl = allUrls[urlIndex];
-        const web3Instance = new Web3(rpcUrl);
+    // // Robust balance fetching with failover
+    // let found = false;
+    // for (let urlIndex = 0; urlIndex < allUrls.length && !found; urlIndex++) {
+    //     const rpcUrl = allUrls[urlIndex];
+    //     const web3Instance = new Web3(rpcUrl);
 
-        let success = true;
-        for (let i = 0; i < erc20.length; i++) {
-            try {
-                const element = erc20[i];
-                const contractInstance = new web3Instance.eth.Contract(tokenAbi, element.contractAddress);
-                const balance = await contractInstance.methods.balanceOf(Address).call();
-                const originalBalance = Number(balance) / Math.pow(10, element.tokenDecimal);
-                erc20[i].balance = originalBalance;
-            } catch (error) {
-                // Failover on RPC error
-                success = false;
-                break;
-            }
-        }
-        if (success) {
-            found = true;
-        }
-    }
+    //     let success = true;
+    //     for (let i = 0; i < erc20.length; i++) {
+    //         try {
+    //             const element = erc20[i];
+    //             const contractInstance = new web3Instance.eth.Contract(tokenAbi, element.contractAddress);
+    //             const balance = await contractInstance.methods.balanceOf(Address).call();
+    //             const originalBalance = Number(balance) / Math.pow(10, element.tokenDecimal);
+    //             erc20[i].balance = originalBalance;
+    //         } catch (error) {
+    //             // Failover on RPC error
+    //             success = false;
+    //             break;
+    //         }
+    //     }
+    //     if (success) {
+    //         found = true;
+    //     }
+    // }
 
-    if (!found) {
-        return new Response(JSON.stringify({
-            success: false,
-            result: [],
-            message: "All RPC URLs failed"
-        }), {
-            headers: { 'Content-Type': 'application/json' }
-        });
-    }
+    // if (!found) {
+    //     return new Response(JSON.stringify({
+    //         success: false,
+    //         result: [],
+    //         message: "All RPC URLs failed"
+    //     }), {
+    //         headers: { 'Content-Type': 'application/json' }
+    //     });
+    // }
 
     return new Response(JSON.stringify({
         success: true,
