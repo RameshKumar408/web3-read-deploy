@@ -26,7 +26,7 @@ export async function POST(request) {
 
     let url = process.env.NEXT_PUBLIC_ETH_URL;
     var apikey = process.env.NEXT_PUBLIC_ETH_API;
-
+    console.log(url, apikey, `${url}/api?chainid=${ChainId}`, "test")
     // Fetch ERC20 token transfer events
     const response = await axios.post(`${url}/api?chainid=${ChainId}`, {
         chainid: ChainId,
@@ -50,7 +50,6 @@ export async function POST(request) {
     if (response?.data?.message == "OK" && Array.isArray(response?.data?.result) && response.data.result.length > 0) {
         const datas = response.data.result;
         for (const element of datas) {
-            console.log("🚀 ~ POST ~ element:", element)
             const alreadyExist = erc20.find(item => item.contractAddress === element?.contractAddress);
             if (!alreadyExist) {
                 erc20.push({
