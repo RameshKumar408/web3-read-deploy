@@ -102,6 +102,7 @@ export default function Home() {
     { label: "opBNB Testnet", value: 5611 }
   ])
   const { address, isConnected } = useAppKitAccount()
+  const { chainId, switchNetwork } = useAppKitNetwork()
 
   const [selectedNetwork, setSelectedNetwork] = useState(1)
 
@@ -144,6 +145,41 @@ export default function Home() {
       setUserAddress(address)
     }
   }, [address])
+
+
+  const addToken = async (item) => {
+    try {
+      if (window.ethereum) {
+
+
+        const hexChainId = '0x' + Number(selectedNetwork).toString(16)
+
+
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: hexChainId }],
+        });
+
+
+        await window.ethereum.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20', // Can also be 'ERC721'
+            options: {
+              address: item?.contractAddress,  // The token contract address
+              symbol: item?.tokenSymbol,                         // A ticker symbol (up to 5 chars)
+              decimals: item?.tokenDecimal,                          // The token decimals
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.log("🚀 ~ addToken ~ error:", error)
+      toast.error(error?.message)
+
+    }
+
+  }
 
 
   return (
@@ -275,12 +311,13 @@ export default function Home() {
                       <div className="ag-courses-item_title">
                         Symbol:  {item?.tokenSymbol}
                       </div>
-                      <div className="ag-courses-item_title">
-                        Balance: {item?.balance}
+
+                      <div className="ag-courses-item_date-box" style={{ cursor: "pointer" }} onClick={() => { navigator.clipboard.writeText(item?.contractAddress); toast.success("copyed") }} >
+                        contractAddress: {item?.contractAddress?.slice(0, 7) + "..." + item?.contractAddress?.slice(-7)}
                       </div>
 
-                      <div className="ag-courses-item_date-box">
-                        contractAddress: {item?.contractAddress?.slice(0, 7) + "..." + item?.contractAddress?.slice(-7)}
+                      <div className="ag-courses-item_date-box addToken" onClick={() => { addToken(item) }} >
+                        Add Token
                       </div>
                     </div>
 

@@ -579,7 +579,7 @@ body {
 
     overflow: hidden;
 
-    font-weight: bold;
+    /* font-weight: bold; */
     font-size: 21px;
     color: #FFF;
 
@@ -995,4 +995,13 @@ main {
         stroke-dasharray: 43.98 307.87;
         stroke-dashoffset: -131.94;
     }
+}
+
+.addToken {
+    text-align: center;
+    border: 1px solid;
+    width: 100%;
+    top: 10px;
+    border-radius: 8px;
+    cursor: pointer;
 }

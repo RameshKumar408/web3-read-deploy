@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Web3 from "web3";
 import { useAppKitNetwork, useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
-import { polygon, mainnet, bscTestnet, bsc, polygonAmoy, sepolia } from '@reown/appkit/networks';
+import { polygon, mainnet, bscTestnet, bsc, polygonAmoy, sepolia, } from '@reown/appkit/networks';
 import { useForm } from 'react-hook-form';
 import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'axios'
@@ -48,6 +48,7 @@ export default function Home() {
   const [selectedNetwork, setSelectedNetwork] = useState('')
 
   useEffect(() => {
+    console.log("🚀 ~ Home ~ selectedNetwork:", selectedNetwork)
     if (selectedNetwork) {
       setLoader(true)
       switchNetwork(JSON.parse(selectedNetwork))
