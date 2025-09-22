@@ -312,6 +312,10 @@ export default function Home() {
                         Symbol:  {item?.tokenSymbol}
                       </div>
 
+                      <div className="ag-courses-item_title">
+                        Balance:  {item?.balance}
+                      </div>
+
                       <div className="ag-courses-item_date-box" style={{ cursor: "pointer" }} onClick={() => { navigator.clipboard.writeText(item?.contractAddress); toast.success("copyed") }} >
                         contractAddress: {item?.contractAddress?.slice(0, 7) + "..." + item?.contractAddress?.slice(-7)}
                       </div>
@@ -320,7 +324,6 @@ export default function Home() {
                         Add Token
                       </div>
                     </div>
-
                   </div>
                 )
               })

@@ -56,7 +56,7 @@ export default function Home() {
 
                             </Button>
                             {"    "}
-                            <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/tokenDetails') }} >
+                            {/* <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/tokenDetails') }} >
 
 
                                 <div className="button-chrome"></div>
@@ -70,7 +70,7 @@ export default function Home() {
                                 </div>
                                 <div className="button-hologram"></div>
                             </Button>
-                            {"    "}
+                            {"    "} */}
                             <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/erc20TokenList') }} >
 
 

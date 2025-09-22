@@ -47,21 +47,38 @@ export async function POST(request) {
 
     // Build ERC20 token list
     let erc20 = [];
-    if (response?.data?.message == "OK" && Array.isArray(response?.data?.result) && response.data.result.length > 0) {
+    if (response?.data?.message === "OK" && Array.isArray(response?.data?.result) && response.data.result.length > 0) {
         const datas = response.data.result;
         for (const element of datas) {
             const alreadyExist = erc20.find(item => item.contractAddress === element?.contractAddress);
-            if (!alreadyExist) {
+            const amount = Number(element?.value) / (10 ** Number(element.tokenDecimal));
+
+            if (alreadyExist) {
+                if (element.to?.toLowerCase() === Address.toLowerCase()) {
+                    // Add balance if address is the recipient
+                    alreadyExist.balance += amount;
+                } else if (element.from?.toLowerCase() === Address.toLowerCase()) {
+                    // Subtract balance if address is the sender
+                    alreadyExist.balance -= amount;
+                }
+            } else {
+                let initialBalance = 0;
+                if (element.to?.toLowerCase() === Address.toLowerCase()) {
+                    initialBalance = amount; // Starting with positive balance
+                } else if (element.from?.toLowerCase() === Address.toLowerCase()) {
+                    initialBalance = -amount; // Starting with negative balance
+                }
                 erc20.push({
                     contractAddress: element.contractAddress,
                     tokenName: element.tokenName,
                     tokenSymbol: element.tokenSymbol,
                     tokenDecimal: element.tokenDecimal,
-                    balance: 0
+                    balance: initialBalance
                 });
             }
         }
     }
+
     if (erc20.length === 0) {
         return new Response(JSON.stringify({
             success: true,
@@ -128,6 +145,7 @@ export async function POST(request) {
 
     return new Response(JSON.stringify({
         success: true,
+        // result: response?.data?.result,
         result: erc20,
         message: "Compiled Successfully"
     }), {
