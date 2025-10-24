@@ -12,7 +12,7 @@ export async function POST(request) {
             code: code,
             client_id: process.env.NEXT_PUBLIC_GCLIENT_ID,
             client_secret: process.env.NEXT_PUBLIC_GCLIENT_SECRET,
-            redirect_uri: "http://localhost:3000",
+            redirect_uri: "https://web3deploy.netlify.app",
             grant_type: "authorization_code",
         });
 
