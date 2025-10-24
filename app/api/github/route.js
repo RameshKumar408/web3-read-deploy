@@ -4,7 +4,7 @@ export async function POST(request) {
     try {
         const params = new URLSearchParams({
             client_id: process.env.NEXT_PUBLIC_GITHUB_CLIENT,
-            redirect_uri: 'https://e7b90708762a.ngrok-free.app/api/githubcallback',
+            redirect_uri: 'https://web3deploy.netlify.app/api/githubcallback',
             scope: 'read:user user:email',
             state: 'rameshtesttokens' // CSRF protection in production
         });

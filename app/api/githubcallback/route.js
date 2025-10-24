@@ -32,12 +32,12 @@ export async function GET(request) {
         });
         const user = userRes.data;
 
-        // res.redirect(`https://e7b90708762a.ngrok-free.app/githubLogin?user=${encodeURIComponent(JSON.stringify(user))}`);
+        // res.redirect(`https://web3deploy.netlify.app/githubLogin?user=${encodeURIComponent(JSON.stringify(user))}`);
 
         return new Response(null, {
             status: 302,
             headers: {
-                Location: `https://e7b90708762a.ngrok-free.app/githubLogin?user=${encodeURIComponent(JSON.stringify(user))}`
+                Location: `https://web3deploy.netlify.app/githubLogin?user=${encodeURIComponent(JSON.stringify(user))}`
             }
         });
     } catch (error) {
@@ -45,7 +45,7 @@ export async function GET(request) {
         return new Response(null, {
             status: 302,
             headers: {
-                Location: `https://e7b90708762a.ngrok-free.app/githubLogin?user=${false}`
+                Location: `https://web3deploy.netlify.app/githubLogin?user=${false}`
             }
         });
 
