@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
     const router = useRouter();
-    const { open } = useAppKit()
+    const { open, close, } = useAppKit()
     const { address, isConnected, caipAddress } = useAppKitAccount()
     const { chainId } = useAppKitNetwork()
 
@@ -20,19 +20,64 @@ export default function Home() {
                     {/* <Button variant="outlined" style={{ color: 'black', borderColor: "black" }} onClick={handleConnectWallet} >Connect TON Wallet</Button> */}
                     {
                         isConnected == false &&
-                        <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { open() }} >
-                            <div className="button-chrome"></div>
-                            <span className="button-text">CONNECT WALLET</span>
-                            <div className="button-loader">
-                                <div className="y2k-spinner">
-                                    <div className="spinner-ring ring-1"></div>
-                                    <div className="spinner-ring ring-2"></div>
-                                    <div className="spinner-ring ring-3"></div>
+                        <>
+                            <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { open() }} >
+                                <div className="button-chrome"></div>
+                                <span className="button-text">CONNECT WALLET</span>
+                                <div className="button-loader">
+                                    <div className="y2k-spinner">
+                                        <div className="spinner-ring ring-1"></div>
+                                        <div className="spinner-ring ring-2"></div>
+                                        <div className="spinner-ring ring-3"></div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="button-hologram"></div>
+                                <div className="button-hologram"></div>
 
-                        </Button>
+                            </Button>
+                            {"    "}
+
+                            <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/telegramLogin') }} >
+                                <div className="button-chrome"></div>
+                                <span className="button-text">Telegram</span>
+                                <div className="button-loader">
+                                    <div className="y2k-spinner">
+                                        <div className="spinner-ring ring-1"></div>
+                                        <div className="spinner-ring ring-2"></div>
+                                        <div className="spinner-ring ring-3"></div>
+                                    </div>
+                                </div>
+                                <div className="button-hologram"></div>
+
+                            </Button>
+
+                            <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/githubLogin') }} >
+                                <div className="button-chrome"></div>
+                                <span className="button-text">Github</span>
+                                <div className="button-loader">
+                                    <div className="y2k-spinner">
+                                        <div className="spinner-ring ring-1"></div>
+                                        <div className="spinner-ring ring-2"></div>
+                                        <div className="spinner-ring ring-3"></div>
+                                    </div>
+                                </div>
+                                <div className="button-hologram"></div>
+
+                            </Button>
+
+                            <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/googleLogin') }} >
+                                <div className="button-chrome"></div>
+                                <span className="button-text">Google</span>
+                                <div className="button-loader">
+                                    <div className="y2k-spinner">
+                                        <div className="spinner-ring ring-1"></div>
+                                        <div className="spinner-ring ring-2"></div>
+                                        <div className="spinner-ring ring-3"></div>
+                                    </div>
+                                </div>
+                                <div className="button-hologram"></div>
+
+                            </Button>
+                        </>
                     }
 
                     {
@@ -76,6 +121,23 @@ export default function Home() {
 
                                 <div className="button-chrome"></div>
                                 <span className="button-text"> Erc20 Token List</span>
+                                <div className="button-loader">
+                                    <div className="y2k-spinner">
+                                        <div className="spinner-ring ring-1"></div>
+                                        <div className="spinner-ring ring-2"></div>
+                                        <div className="spinner-ring ring-3"></div>
+                                    </div>
+                                </div>
+                                <div className="button-hologram"></div>
+                            </Button>
+
+
+                            {"    "}
+                            <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { open() }} >
+
+
+                                <div className="button-chrome"></div>
+                                <span className="button-text">Disconnect</span>
                                 <div className="button-loader">
                                     <div className="y2k-spinner">
                                         <div className="spinner-ring ring-1"></div>
