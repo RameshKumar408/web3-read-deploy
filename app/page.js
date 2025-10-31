@@ -77,6 +77,20 @@ export default function Home() {
                                 <div className="button-hologram"></div>
 
                             </Button>
+
+                            <Button style={{ width: "200px", height: "45px", color: "white" }} onClick={() => { router.push('/qrcodeGenerator') }} >
+                                <div className="button-chrome"></div>
+                                <span className="button-text">Qr Code Generator</span>
+                                <div className="button-loader">
+                                    <div className="y2k-spinner">
+                                        <div className="spinner-ring ring-1"></div>
+                                        <div className="spinner-ring ring-2"></div>
+                                        <div className="spinner-ring ring-3"></div>
+                                    </div>
+                                </div>
+                                <div className="button-hologram"></div>
+
+                            </Button>
                         </>
                     }
 
