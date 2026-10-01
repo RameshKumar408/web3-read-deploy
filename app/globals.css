@@ -1005,3 +1005,7 @@ main {
     border-radius: 8px;
     cursor: pointer;
 }
+
+/* HashMint page foundation */
+html { scroll-behavior: smooth; }
+body { margin: 0; padding: 0; min-height: 100vh; height: auto; display: block; background: #FFFEF5; color: #38240D; font-family: Arial, Helvetica, sans-serif; }
